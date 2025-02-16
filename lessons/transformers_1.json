@@ -1,39 +1,65 @@
 {
-  "title": "De RNNs a Transformers: La Revolución de la Auto-Atención",
+  "title": "Transformers: De la Motivación Matemática a la Implementación",
   "steps": [
     {
       "type": "text",
-      "content": "<h3>🔍 Límites de Modelos Clásicos</h3><table><tr><th>Modelo</th><th>🔴 Problema Fundamental</th><th>📉 Limitación Matemática</th></tr><tr><td>RNN</td><td>Pérdida de información en secuencias largas</td><td>Vanishing gradients en ∂L/∂h<sub>t</sub> (|λ<sub>W</sub>| < 1 en celdas)</td></tr><tr><td>CNN</td><td>Recepción limitada del contexto</td><td>Kernel size fijo → O(n/k) interacciones remotas</td></tr></table><p>❓ <em>Reflexión:</em> Si una palabra clave está en la posición 100 de un texto, ¿cómo afectaría esto a una RNN estándar?</p>"
+      "content": "<h3>🔍 Crisis de los Modelos Secuenciales (2017)</h3><p>Problemas fundamentales en NLP pre-Transformers:</p><table class='model-limits'><tr><th></th><th>RNN/LSTM</th><th>CNN</th><th>Transformers</th></tr><tr><td>Long-range dependencies</td><td>🚫 O(n) pasos</td><td>🚫 Ventana fija</td><td>✅ O(1)</td></tr><tr><td>Paralelización</td><td>🚫 Secuencial</td><td>✅ Parcial</td><td>✅ Completa</td></tr><tr><td>Coste computacional</td><td>O(n)</td><td>O(k⋅n)</td><td>O(n²)</td></tr></table><p><strong>Insight clave:</strong> La atención elimina cuellos de botella en el flujo de información a través del tiempo.</p>"
     },
     {
       "type": "problem",
-      "question": "Para traducir un texto de 500 palabras donde la estructura gramatical depende de palabras separadas por 200 posiciones, ¿qué arquitectura sería más eficiente?",
+      "question": "¿Por qué las RNNs fallan en capturar dependencias a muy largo plazo?",
       "options": [
-        "RNN: Procesamiento secuencial con memoria oculta",
-        "CNN: Filtros convolutivos locales repetidos",
-        "Transformer: Mecanismo de atención completo"
+        "Por el problema de vanishing gradients: ∂L/∂h_t ≈ ∏_{i=1}^t W_{rec} → 0",
+        "Debido a limitaciones de memoria hardware",
+        "Porque procesan la secuencia al revés"
       ],
-      "answer": "Transformer: Mecanismo de atención completo",
-      "explanation": "✅ Los Transformers calculan dependencias entre todas las posiciones en O(1) operaciones, evitando la degradación exponencial de gradientes en RNNs."
+      "answer": "Por el problema de vanishing gradients: ∂L/∂h_t ≈ ∏_{i=1}^t W_{rec} → 0",
+      "explanation": "📉 <strong>Análisis Matemático:</strong> Si |λ_max(W_{rec})| < 1, el gradiente decae exponencialmente: ||∂h_t/∂h_1|| ~ |λ|^t → 0 para t grande."
     },
     {
       "type": "text",
-      "content": "<h3>🧮 Génesis Matemática de la Auto-Atención</h3><p>La ecuación fundamental:</p><p>\\[ \\text{Atención}(Q,K,V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V \\]</p><p><strong>Diseño Intencional:</strong></p><ul><li>🔑 <em>Queries/Keys/Values:</em> Analogon a sistemas de recuperación de información (Q = consulta, K = indice, V = contenido)</li><li>⚖️ <em>Softmax + Escalado:</em> Normaliza influencias y controla la varianza (evita que dot products crezcan con √d<sub>k</sub>)</li><li>🧩 <em>Permutación-Equivariancia:</em> Atención es invariante al orden de entrada → Requiere positional encoding</li></ul><p>❓ <em>Profundizando:</em> ¿Por qué el producto punto QK<sup>T</sup> y no otra medida de similitud?</p>"
+      "content": "<h3>🧮 La Ecuación Fundamental de la Atención</h3><p>La auto-atención se define como:</p><div class='equation'>\\[ \\text{Attention}(Q,K,V) = \\text{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V \\]</div><p><strong>Desglose Matemático:</strong></p><ol><li><em>Producto QKᵀ:</em> Mide compatibilidad entre consultas y claves<br>\\[ \\text{Similitud}(q_i,k_j) = q_i \\cdot k_j \\]</li><li><em>Escalado por 1/√d_k:</em><br>\\[ \\frac{QK^\\top}{\\sqrt{d_k}} \\quad \\text{(Control de varianza)} \\]<p>Si \\( q_i,k_j \\sim \\mathcal{N}(0,1) \\), entonces \\( \\text{Var}(q_i \\cdot k_j) = d_k \\).<br>El escalado mantiene \\( \\text{Var} = 1 \\), evitando saturación del softmax.</p></li><li><em>Softmax:</em> Normaliza a distribución de probabilidad<br>\\[ \\alpha_{ij} = \\frac{e^{s_{ij}}}{\\sum_k e^{s_{ik}}} \\]</li><li><em>Combinación Lineal:</em> Promedia valores según importancia<br>\\[ h_i = \\sum_j \\alpha_{ij}v_j \\]</li></ol>"
     },
     {
       "type": "problem",
-      "question": "¿Por qué se escala por 1/√d_k en la atención?",
+      "question": "¿Qué pasaría si elimináramos el factor de escalado 1/√d_k?",
       "options": [
-        "Para mantener varianza ≈1 y estabilizar entrenamiento",
-        "Para reducir la sensibilidad a dimensiones altas",
-        "Ambas razones anteriores"
+        "Los logits crecerían con d_k → softmax saturado → gradientes pequeños",
+        "Mejoraría la eficiencia computacional",
+        "No afectaría el rendimiento"
       ],
-      "answer": "Ambas razones anteriores",
-      "explanation": "📐 <strong>Teorema:</strong> Si q,k ∼ N(0,1), Var(q·k) = d_k. Escalar por 1/√d_k hace Var = 1 → Evita softmax saturado y mejora flujo de gradientes."
+      "answer": "Los logits crecerían con d_k → softmax saturado → gradientes pequeños",
+      "explanation": "📚 <strong>Demostración:</strong> Para d_k=64, E[QKᵀ] = 64 → softmax([64, 64,...]) ≈ [1/n, ..., 1/n] (gradientes ≈ 0)"
     },
     {
       "type": "text",
-      "content": "<h3>🎯 Conclusión: Por qué Funciona</h3><p>Los Transformers superan limitaciones previas mediante:</p><ol><li><strong>Acceso Directo Matemático:</strong> Atienden cualquier posición sin path length (vs O(n) en RNNs)</li><li><strong>Paralelización Óptima:</strong> Operaciones matriciales en lugar de secuenciales</li><li><strong>Dinamismo Contextual:</strong> Ponderaciones de atención aprendidas, no fijas como en CNNs</li></ol><p>🔬 <em>Insight Clave:</em> La atención como aproximación diferenciable de un sistema de memoria asociativa key-value.</p>"
+      "content": "<h3>🎭 Multi-Head Attention: Por qué múltiples cabezas?</h3><p>Definición:</p>\\[ \\text{MultiHead}(Q,K,V) = \\text{Concat}(head_1,...,head_h)W^O \\]<p>Donde cada cabeza:</p>\\[ head_i = \\text{Attention}(QW_i^Q,KW_i^K,VW_i^V) \\]<p><strong>Propiedades Clave:</strong></p><ul><li>🔄 Cada cabeza proyecta en distintos subespacios</li><li>🧠 Captura diferentes relaciones sintácticas/semánticas</li><li>⚡ Aumenta capacidad sin incrementar demasiado cómputo</li></ul>"
+    },
+    {
+      "type": "problem",
+      "question": "Si usáramos solo 1 cabeza de atención con dimensión d=512 vs 8 cabezas de d=64:",
+      "options": [
+        "8 cabezas: Mayor capacidad de representación + paralelismo",
+        "1 cabeza: Más eficiente y mejor rendimiento",
+        "Es indiferente, son equivalentes"
+      ],
+      "answer": "8 cabezas: Mayor capacidad de representación + paralelismo",
+      "explanation": "🎯 <strong>Análisis:</strong> 8 cabezas permiten:\\n- Paralelización total\\n- Especialización en distintos tipos de patrones\\n- Dimensión total igual (8×64=512)"
+    },
+    {
+      "type": "text",
+      "content": "<h3>📍 Positional Encoding: La Geometría del Orden</h3><p>Solución a la permutación-equivariancia de la atención pura:</p>\\[ PE(pos,2i) = \\sin\\left(\\frac{pos}{10000^{2i/d}}\\right) \\]\\[ PE(pos,2i+1) = \\cos\\left(\\frac{pos}{10000^{2i/d}}\\right) \\]<p><strong>Propiedades Matemáticas:</strong></p><ul><li>📐 Representa posiciones relativas mediante combinaciones lineales</li><li>🌀 Frecuencias exponencialmente decrecientes capturan escalas múltiples</li><li>🧩 Permite extrapolación a longitudes no vistas</li></ul>"
+    },
+    {
+      "type": "problem",
+      "question": "¿Por qué usar funciones sinusoidales en lugar de embeddings aprendidos?",
+      "options": [
+        "Para generalizar a secuencias más largas que las de entrenamiento",
+        "Porque son más fáciles de optimizar",
+        "Para reducir el coste computacional"
+      ],
+      "answer": "Para generalizar a secuencias más largas que las de entrenamiento",
+      "explanation": "📈 <strong>Ventaja:</strong> Los sinusoides codifican posiciones de forma absoluta y relativa simultáneamente mediante identidades trigonométricas."
     }
   ]
 }
