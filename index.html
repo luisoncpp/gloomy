@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprendizaje Interactivo con LaTeX</title>
+    
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .step { display: none; border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .active-step { display: block; }
+        .progress-bar { width: 100%; height: 10px; background-color: #eee; margin: 20px 0; }
+        .progress { height: 100%; background-color: #4CAF50; transition: width 0.3s; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .correct { color: green; }
+        .incorrect { color: red; }
+        #file-section { text-align: center; margin-bottom: 30px; }
+        .latex { margin: 5px 0; }
+        .katex { font-size: 1.1em !important; }
+        
+        /* Nuevos estilos añadidos */
+        .latex-option {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .latex-option input[type="radio"] {
+            margin-right: 10px;
+        }
+        .latex-container {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div id="file-section">
+        <h2>Cargar lección</h2>
+        <input type="file" id="file-input" accept=".json">
+    </div>
+
+    <div id="app" style="display: none;">
+        <h1 id="lesson-title"></h1>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div id="steps-container"></div>
+        <button onclick="previousStep()" id="prev-btn">Anterior</button>
+        <button onclick="nextStep()" id="next-btn">Siguiente</button>
+        <div id="completion-message" style="display: none;">
+            <h2 class="correct">¡Lección completada! 🎉</h2>
+            <button onclick="resetProgress()">Reiniciar lección</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables de estado
+        let currentLesson = null;
+        let currentStep = 0;
+        let completedSteps = [];
+
+        // Función renderMath modificada
+        function renderMath(element) {
+            const elements = element.querySelectorAll('.latex');
+            elements.forEach(el => {
+                const displayMode = el.classList.contains('block');
+                try {
+                    katex.render(el.textContent, el, {
+                        displayMode: displayMode,
+                        throwOnError: false,
+                        fleqn: true
+                    });
+                } catch (e) {
+                    el.innerHTML = `<span style="color: red">Error en ecuación: ${el.textContent}</span>`;
+                }
+            });
+        }
+
+        // Procesar contenido con LaTeX
+        function processLatex(content) {
+            return content
+                .replace(/\\\[/g, '<span class="latex block">')
+                .replace(/\\\]/g, '</span>')
+                .replace(/\\\(/g, '<span class="latex inline">')
+                .replace(/\\\)/g, '</span>');
+        }
+
+        function decodeHTMLEntities(text) {
+            var txt = document.createElement("textarea");
+            txt.innerHTML = text;
+            return txt.value;
+        }
+
+        // Cargar archivo JSON
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    currentLesson = JSON.parse(e.target.result);
+                    
+                    // Cargar progreso guardado si existe
+                    const savedStep = localStorage.getItem(`${currentLesson.title}_step`);
+                    if (savedStep !== null) {
+                        currentStep = parseInt(savedStep, 10);
+                    }
+                    const savedProgress = localStorage.getItem(`${currentLesson.title}_progress`);
+                    if (savedProgress !== null) {
+                        completedSteps = JSON.parse(savedProgress);
+                    }
+                    
+                    document.getElementById('app').style.display = 'block';
+                    document.getElementById('lesson-title').textContent = currentLesson.title;
+                    renderLesson();
+                } catch (error) {
+                    alert("Error en el JSON: " + error.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Renderizar lección
+        function renderLesson() {
+            const container = document.getElementById("steps-container");
+            container.innerHTML = "";
+
+            currentLesson.steps.forEach((step, index) => {
+                const stepDiv = document.createElement("div");
+                stepDiv.className = `step ${index === currentStep ? 'active-step' : ''}`;
+                
+                if (step.type === "text") {
+                    stepDiv.innerHTML = `<div>${processLatex(step.content)}</div>`;
+                } else {
+                    const optionsHtml = step.options.map(option => {
+                        const processedOption = processLatex(option);
+                        return generateOptionHTML(
+                            index,
+                            option,
+                            processedOption,
+                            decodeHTMLEntities(completedSteps[index] || '') === decodeHTMLEntities(option)
+                        );
+                    }).join("");
+
+                    const isCorrect = decodeHTMLEntities(step.answer) === decodeHTMLEntities(completedSteps[index] || '');                    
+
+					const explanation = completedSteps[index] ? 
+						`<p class="${isCorrect ? 'correct' : 'incorrect'}">
+							${processLatex(step.explanation.replace(/\\n/g, '<br>'))}
+						</p>` : '';
+
+                    stepDiv.innerHTML = `
+                        <p><strong>${processLatex(step.question)}</strong></p>
+                        <div class="options-container">${optionsHtml}</div>
+                        ${explanation}`;
+                }
+                
+                container.appendChild(stepDiv);
+                renderMath(stepDiv);
+            });
+
+            updateProgress();
+            updateNavigation();
+        }
+
+        // Funciones auxiliares
+        function saveAnswer(stepIndex, answer) {
+            completedSteps[stepIndex] = answer;
+            localStorage.setItem(`${currentLesson.title}_progress`, JSON.stringify(completedSteps));
+            renderLesson();
+        }
+
+        function updateProgress() {
+            const progress = ((currentStep + 1) / currentLesson.steps.length * 100);
+            document.getElementById("progress").style.width = `${progress}%`;
+        }
+
+        function nextStep() {
+            if (currentStep < currentLesson.steps.length - 1) {
+                currentStep++;
+                localStorage.setItem(`${currentLesson.title}_step`, currentStep);
+                renderLesson();
+            } else {
+                document.getElementById("completion-message").style.display = "block";
+                document.getElementById("steps-container").style.display = "none";
+                document.getElementById("prev-btn").style.display = "none";
+                document.getElementById("next-btn").style.display = "none";
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                localStorage.setItem(`${currentLesson.title}_step`, currentStep);
+                renderLesson();
+            }
+        }
+
+        function updateNavigation() {
+            document.getElementById("prev-btn").style.display = currentStep === 0 ? "none" : "inline-block";
+            document.getElementById("next-btn").innerText = currentStep === currentLesson.steps.length - 1 ? "Finalizar" : "Siguiente";
+        }
+
+        function resetProgress() {
+            currentStep = 0;
+            completedSteps = [];
+            if (currentLesson) {
+                localStorage.removeItem(`${currentLesson.title}_step`);
+                localStorage.removeItem(`${currentLesson.title}_progress`);
+            }
+            document.getElementById("completion-message").style.display = "none";
+            document.getElementById("steps-container").style.display = "block";
+            
+            // Asegurar que los botones se muestren
+            document.getElementById("prev-btn").style.display = "none";
+            document.getElementById("next-btn").style.display = "inline-block";
+            
+            renderLesson();
+        }
+
+        // Función modificada para generar opciones
+        function generateOptionHTML(stepIndex, option, processedOption, isChecked) {
+            // Escapar caracteres especiales para el atributo onchange
+            const escapedOption = option
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'");
+            
+            return `
+                <label class="latex-option">
+                    <input type="radio" 
+                        name="step-${stepIndex}" 
+                        value="${escapedOption}" 
+                        ${isChecked ? 'checked' : ''}
+                        onchange="saveAnswer(${stepIndex}, '${escapedOption}')">
+                    <div class="latex-container">${processedOption}</div>
+                </label>`;
+        }
+
+    </script>
+</body>
+</html>
