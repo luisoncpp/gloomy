@@ -1,5 +1,5 @@
 # gloomy
-A simple offline app inspired in Brilliant
+A simple offline app inspired by Brilliant
 
 It runs completly offline, the lesons are provided as json files.
 
