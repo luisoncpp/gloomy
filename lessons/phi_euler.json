@@ -1,0 +1,84 @@
+{
+  "title": "El Teorema de Euler: De la intuición a la demostración",
+  "steps": [
+    {
+      "type": "text",
+      "content": "<h3>Exploración inicial</h3><p>Imagina números del 1 al 10. ¿Cuántos son coprimos con 10?</p><p><strong>Actividad:</strong> \\(1, 3, 7, 9\\) → \\(4\\) números</p><p>Ahora para \\(n=12\\): \\(1,5,7,11\\) → \\(\\phi(12) = 4\\)</p><p>¿Ves un patrón? \\(\\phi(n)\\) cuenta los números menores que \\(n\\) coprimos con \\(n\\).</p>"
+    },
+    {
+      "type": "problem",
+      "question": "Calcula \\(\\phi(15)\\) listando los números",
+      "options": [
+        "\\(6\\)",
+        "\\(8\\)",
+        "\\(10\\)"
+      ],
+      "answer": "\\(8\\)",
+      "explanation": "Números coprimos: \\(1,2,4,7,8,11,13,14\\) → \\(8\\) elementos"
+    },
+    {
+      "type": "text",
+      "content": "<h3>Propiedad multiplicativa</h3><p>Descomponemos \\(n\\) en primos: \\(15 = 3 \\times 5\\)</p><p>¿\\(\\phi(15) = \\phi(3) \\times \\phi(5)\\)? \\(\\phi(3)=2\\), \\(\\phi(5)=4\\) → \\(2 \\times 4 = 8\\) ✓</p><p><strong>Pregunta clave:</strong> ¿Funciona esto siempre que los factores sean coprimos?</p>"
+    },
+    {
+      "type": "problem",
+      "question": "Calcula \\(\\phi(6)\\) y \\(\\phi(10)\\) para verificar \\(\\phi(6 \\times 10) = \\phi(6) \\times \\phi(10)\\)",
+      "options": [
+        "Sí, \\(\\phi(60) = 16 = 2 \\times 4\\)",
+        "No, \\(\\phi(60) = 16 \\neq 2 \\times 4 = 8\\)",
+        "Depende de los factores"
+      ],
+      "answer": "Sí, \\(\\phi(60) = 16 = 2 \\times 4\\)",
+      "explanation": "\\(\\phi(6) = 2\\), \\(\\phi(10) = 4\\) → \\(2 \\times 4 = 8\\)<br>Pero \\(\\phi(60) = \\phi(4 \\times 3 \\times 5) = \\phi(4) \\times \\phi(3) \\times \\phi(5) = 2 \\times 2 \\times 4 = 16\\).<br><strong>¡Cuidado con potencias de primos!</strong>"
+    },
+    {
+      "type": "text",
+      "content": "<h3>Demostración para potencias de primos</h3><p>Sea \\(p\\) primo. Para \\(\\phi(p^2)\\)</p><p>Números no coprimos con \\(p^2\\): \\(p, 2p, 3p, \\ldots, p^2\\) → \\(p\\) números</p><p>∴ \\(\\phi(p^2) = p^2 - p = p(p-1)\\)</p><p><strong>Generalizando:</strong> \\(\\phi(p^k) = p^k - p^{k-1} = p^{k-1}(p-1)\\)</p>"
+    },
+    {
+      "type": "problem",
+      "question": "Calcula \\(\\phi(16)\\) usando la fórmula para potencias de primos",
+      "options": [
+        "\\(8\\)",
+        "\\(12\\)",
+        "\\(16\\)"
+      ],
+      "answer": "\\(8\\)",
+      "explanation": "\\(16 = 2^4\\) → \\(\\phi(2^4) = 2^4 - 2^3 = 16 - 8 = 8\\)"
+    },
+    {
+      "type": "text",
+      "content": "<h3>Demostración completa</h3><ol><li><strong>Caso base:</strong> \\(\\phi(pq) = \\phi(p)\\phi(q)\\) si \\(p \\neq q\\) primos</li><li><strong>Paso inductivo:</strong> Si \\(n = p_1^{k_1}p_2^{k_2}\\ldots p_m^{k_m}\\) → \\(\\phi(n) = n\\prod\\left(1-\\frac{1}{p_i}\\right)\\)</li></ol><p><strong>Ejemplo concreto:</strong> \\(n = 12 = 2^2 \\times 3\\)<br>\\(\\phi(12) = 12 \\times \\left(1-\\frac{1}{2}\\right) \\times \\left(1-\\frac{1}{3}\\right) = 12 \\times \\frac{1}{2} \\times \\frac{2}{3} = 4\\) ✓</p>"
+    },
+    {
+      "type": "problem",
+      "question": "Aplica la fórmula para \\(\\phi(60) = 2^2 \\times 3 \\times 5\\)",
+      "options": [
+        "\\(\\phi(60) = 60 \\times \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{4}{5} = 16\\)",
+        "\\(\\phi(60) = 60 \\times \\frac{1}{2} \\times \\frac{1}{3} \\times \\frac{1}{5} = 10\\)",
+        "\\(\\phi(60) = 60 \\times \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{4}{5} = 32\\)"
+      ],
+      "answer": "\\(\\phi(60) = 60 \\times \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{4}{5} = 16\\)",
+      "explanation": "\\(\\phi(60) = 60 \\times \\left(1-\\frac{1}{2}\\right) \\times \\left(1-\\frac{1}{3}\\right) \\times \\left(1-\\frac{1}{5}\\right) = 60 \\times \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{4}{5} = 16\\)"
+    },
+    {
+      "type": "text",
+      "content": "<h3>Teorema de Euler</h3><p>Si \\(a\\) y \\(n\\) son coprimos, entonces:<br>\\(a^{\\phi(n)} \\equiv 1 \\pmod{n}\\)</p><p><strong>Demostración con grupos:</strong></p><ol><li>Los números coprimos con \\(n\\) forman grupo multiplicativo</li><li>El orden del grupo es \\(\\phi(n)\\)</li><li>Por Lagrange: \\(a^{\\phi(n)} \\equiv 1\\)</li></ol>"
+    },
+    {
+      "type": "problem",
+      "question": "Verifica para \\(a=3\\), \\(n=10\\): \\(\\phi(10)=4\\) ¿\\(3^4 \\equiv 1 \\pmod{10}\\)?",
+      "options": [
+        "\\(81 \\equiv 1 \\pmod{10}\\) ✓",
+        "\\(81 \\equiv 8 \\pmod{10}\\) ✗",
+        "No aplica porque 3 y 10 no son coprimos"
+      ],
+      "answer": "\\(81 \\equiv 1 \\pmod{10}\\) ✓",
+      "explanation": "\\(3^4 = 81\\) → \\(81 \\bmod 10 = 1\\). <strong>¡Funciona!</strong>"
+    },
+    {
+      "type": "text",
+      "content": "<h3>Aplicación a exponenciación modular</h3><p>Para calcular \\(7^{100} \\pmod{13}\\)<br>\\(\\phi(13)=12\\) → \\(7^{12} \\equiv 1 \\pmod{13}\\)<br>\\(100 = 12 \\times 8 + 4\\) → \\(7^{100} \\equiv (7^{12})^8 \\times 7^4 \\equiv 1^8 \\times 7^4 \\equiv 7^4 \\pmod{13}\\)</p><p><strong>Truco final:</strong> Romper exponentes usando \\(\\phi(n)\\)</p>"
+    }
+  ]
+}
