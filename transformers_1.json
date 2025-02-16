@@ -1,0 +1,39 @@
+{
+  "title": "De RNNs a Transformers: La Revolución de la Auto-Atención",
+  "steps": [
+    {
+      "type": "text",
+      "content": "<h3>🔍 Límites de Modelos Clásicos</h3><table><tr><th>Modelo</th><th>🔴 Problema Fundamental</th><th>📉 Limitación Matemática</th></tr><tr><td>RNN</td><td>Pérdida de información en secuencias largas</td><td>Vanishing gradients en ∂L/∂h<sub>t</sub> (|λ<sub>W</sub>| < 1 en celdas)</td></tr><tr><td>CNN</td><td>Recepción limitada del contexto</td><td>Kernel size fijo → O(n/k) interacciones remotas</td></tr></table><p>❓ <em>Reflexión:</em> Si una palabra clave está en la posición 100 de un texto, ¿cómo afectaría esto a una RNN estándar?</p>"
+    },
+    {
+      "type": "problem",
+      "question": "Para traducir un texto de 500 palabras donde la estructura gramatical depende de palabras separadas por 200 posiciones, ¿qué arquitectura sería más eficiente?",
+      "options": [
+        "RNN: Procesamiento secuencial con memoria oculta",
+        "CNN: Filtros convolutivos locales repetidos",
+        "Transformer: Mecanismo de atención completo"
+      ],
+      "answer": "Transformer: Mecanismo de atención completo",
+      "explanation": "✅ Los Transformers calculan dependencias entre todas las posiciones en O(1) operaciones, evitando la degradación exponencial de gradientes en RNNs."
+    },
+    {
+      "type": "text",
+      "content": "<h3>🧮 Génesis Matemática de la Auto-Atención</h3><p>La ecuación fundamental:</p><p>\\[ \\text{Atención}(Q,K,V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V \\]</p><p><strong>Diseño Intencional:</strong></p><ul><li>🔑 <em>Queries/Keys/Values:</em> Analogon a sistemas de recuperación de información (Q = consulta, K = indice, V = contenido)</li><li>⚖️ <em>Softmax + Escalado:</em> Normaliza influencias y controla la varianza (evita que dot products crezcan con √d<sub>k</sub>)</li><li>🧩 <em>Permutación-Equivariancia:</em> Atención es invariante al orden de entrada → Requiere positional encoding</li></ul><p>❓ <em>Profundizando:</em> ¿Por qué el producto punto QK<sup>T</sup> y no otra medida de similitud?</p>"
+    },
+    {
+      "type": "problem",
+      "question": "¿Por qué se escala por 1/√d_k en la atención?",
+      "options": [
+        "Para mantener varianza ≈1 y estabilizar entrenamiento",
+        "Para reducir la sensibilidad a dimensiones altas",
+        "Ambas razones anteriores"
+      ],
+      "answer": "Ambas razones anteriores",
+      "explanation": "📐 <strong>Teorema:</strong> Si q,k ∼ N(0,1), Var(q·k) = d_k. Escalar por 1/√d_k hace Var = 1 → Evita softmax saturado y mejora flujo de gradientes."
+    },
+    {
+      "type": "text",
+      "content": "<h3>🎯 Conclusión: Por qué Funciona</h3><p>Los Transformers superan limitaciones previas mediante:</p><ol><li><strong>Acceso Directo Matemático:</strong> Atienden cualquier posición sin path length (vs O(n) en RNNs)</li><li><strong>Paralelización Óptima:</strong> Operaciones matriciales en lugar de secuenciales</li><li><strong>Dinamismo Contextual:</strong> Ponderaciones de atención aprendidas, no fijas como en CNNs</li></ol><p>🔬 <em>Insight Clave:</em> La atención como aproximación diferenciable de un sistema de memoria asociativa key-value.</p>"
+    }
+  ]
+}
